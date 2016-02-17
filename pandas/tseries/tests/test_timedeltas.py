@@ -726,6 +726,15 @@ class TestTimedeltas(tm.TestCase):
         expected = TimedeltaIndex([np.timedelta64(1, 'D')] * 5)
         tm.assert_index_equal(result, expected)
 
+        # Test with bare strings
+        expected = pd.to_timedelta(6458920, unit='s')
+        result = pd.to_timedelta('6458920', unit='s')
+        self.assertEqual(result, expected)
+
+        # And arrays of strings
+        result = pd.to_timedelta(['6458920'], unit='s')[0]
+        self.assertEqual(result, expected)
+
         # Test with lists as input when box=false
         expected = np.array(np.arange(3) * 1000000000, dtype='timedelta64[ns]')
         result = to_timedelta(range(3), unit='s', box=False)
