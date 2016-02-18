@@ -2852,8 +2852,8 @@ cdef inline parse_timedelta_string(object ts, object set_unit, coerce=False):
         # If the user has also specified a unit string then return a NaT - we're not converting it here
         if set_unit:
             return NPY_NAT
-    else:
-        # Otherwise add the specified unit string to the end of ts (whether it's blank or not)
+    elif set_unit:
+        # Otherwise add the specified unit string to the end of ts
         ts += set_unit
 
     if ts in _nat_strings or not len(ts):
