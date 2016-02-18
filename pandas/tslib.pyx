@@ -2370,8 +2370,6 @@ class Timedelta(_Timedelta):
         if isinstance(value, Timedelta):
             value = value.value
         elif util.is_string_object(value):
-            if unit is not None:
-                value = value + unit
             value = np.timedelta64(parse_timedelta_string(value, False))
         elif isinstance(value, timedelta):
             value = convert_to_timedelta64(value,'ns',False)
@@ -2747,7 +2745,7 @@ def array_to_timedelta64(ndarray[object] values, unit='ns', errors='raise'):
     # if so then we hit the fast path
     try:
         for i in range(n):
-            result[i] = parse_timedelta_string(values[i] + unit, is_coerce)
+            result[i] = parse_timedelta_string(values[i], is_coerce)
     except:
         for i in range(n):
             result[i] = convert_to_timedelta64(values[i], unit, is_coerce)
@@ -3073,7 +3071,7 @@ cdef inline convert_to_timedelta64(object ts, object unit, object coerce):
             ts = cast_from_unit(ts, unit)
             ts = np.timedelta64(ts)
     elif util.is_string_object(ts):
-        ts = np.timedelta64(parse_timedelta_string(ts + unit, coerce))
+        ts = np.timedelta64(parse_timedelta_string(ts, coerce))
     elif hasattr(ts,'delta'):
         ts = np.timedelta64(_delta_to_nanoseconds(ts),'ns')
 
