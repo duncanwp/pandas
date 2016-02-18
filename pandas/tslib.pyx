@@ -2848,7 +2848,7 @@ cdef inline parse_timedelta_string(object ts, object set_unit, coerce=False):
     # have_hhmmss : tracks if we have a regular format hh:mm:ss
 
     # If ts ends in a character it must include a unit string
-    if ts[-1].is_alpha():
+    if ts[-1].isalpha():
         # If the user has also specified a unit string then return a NaT - we're not converting it here
         if set_unit:
             return NPY_NAT
