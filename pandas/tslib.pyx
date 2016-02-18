@@ -2370,7 +2370,7 @@ class Timedelta(_Timedelta):
         if isinstance(value, Timedelta):
             value = value.value
         elif util.is_string_object(value):
-            value = np.timedelta64(parse_timedelta_string(value, False))
+            value = np.timedelta64(parse_timedelta_string(value, unit, False))
         elif isinstance(value, timedelta):
             value = convert_to_timedelta64(value,'ns',False)
         elif isinstance(value, np.timedelta64):
@@ -2745,7 +2745,7 @@ def array_to_timedelta64(ndarray[object] values, unit='ns', errors='raise'):
     # if so then we hit the fast path
     try:
         for i in range(n):
-            result[i] = parse_timedelta_string(values[i], is_coerce)
+            result[i] = parse_timedelta_string(values[i], unit, is_coerce)
     except:
         for i in range(n):
             result[i] = convert_to_timedelta64(values[i], unit, is_coerce)
@@ -2824,7 +2824,7 @@ cdef inline timedelta_from_spec(object number, object frac, object unit):
     n = ''.join(number) + '.' + ''.join(frac)
     return cast_from_unit(float(n), unit)
 
-cdef inline parse_timedelta_string(object ts, coerce=False):
+cdef inline parse_timedelta_string(object ts, object set_unit, coerce=False):
     """
     Parse an regular format timedelta string
 
@@ -2846,6 +2846,15 @@ cdef inline parse_timedelta_string(object ts, coerce=False):
     # have_dot : tracks if we are processing a dot (either post hhmmss or inside an expression)
     # have_value : track if we have at least 1 leading unit
     # have_hhmmss : tracks if we have a regular format hh:mm:ss
+
+    # If ts ends in a character it must include a unit string
+    if ts[-1].is_alpha():
+        # If the user has also specified a unit string then return a NaT - we're not converting it here
+        if set_unit:
+            return NPY_NAT
+    else:
+        # Otherwise add the specified unit string to the end of ts (whether it's blank or not)
+        ts += set_unit
 
     if ts in _nat_strings or not len(ts):
         return NPY_NAT
@@ -3071,7 +3080,7 @@ cdef inline convert_to_timedelta64(object ts, object unit, object coerce):
             ts = cast_from_unit(ts, unit)
             ts = np.timedelta64(ts)
     elif util.is_string_object(ts):
-        ts = np.timedelta64(parse_timedelta_string(ts, coerce))
+        ts = np.timedelta64(parse_timedelta_string(ts, unit, coerce))
     elif hasattr(ts,'delta'):
         ts = np.timedelta64(_delta_to_nanoseconds(ts),'ns')
 
